@@ -1,12 +1,11 @@
 import nock from 'nock';
 import mode2Perm from 'mode-to-permissions';
 import * as path from 'path';
-import * as url from 'url';
 import * as io from '@actions/io';
 import * as fs from 'fs';
 
-const toolDir = path.join(__dirname, 'runner', 'tools');
-const tempDir = path.join(__dirname, 'runner', 'temp');
+const toolDir = path.join(import.meta.dirname, 'runner', 'tools');
+const tempDir = path.join(import.meta.dirname, 'runner', 'temp');
 const IS_WINDOWS = process.platform === 'win32';
 const HOST = 'https://dist.nuget.org';
 const PATH = '/tools.json';
@@ -49,7 +48,7 @@ process.env['RUNNER_TOOL_CACHE'] = toolDir;
 process.env['RUNNER_TEMP'] = tempDir;
 
 import * as tc from '@actions/tool-cache';
-import installer from '../src/installer';
+import installer from '../src/installer.js';
 
 describe('installer tests', () => {
   beforeAll(async () => {
@@ -72,7 +71,8 @@ describe('installer tests', () => {
       .get(PATH)
       .once()
       .reply(200, TOOLS_JSON);
-    const p = url.parse(TOOLS_JSON['nuget.exe'][0].url).path || '';
+    const requestUrl = new URL(TOOLS_JSON['nuget.exe'][0].url);
+    const p = `${requestUrl.pathname}${requestUrl.search}`;
     srv
       .get(p)
       .once()
